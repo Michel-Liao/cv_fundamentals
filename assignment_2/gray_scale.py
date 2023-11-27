@@ -20,10 +20,10 @@ for i in range(height):
     for j in range(width):
         pic[i,j] = np.sum(pic[i,j]) / 3
 
+pic = np.delete(pic, [1,2], axis=1)
+# delets columns 1 and 2
 print(pic)
-
-pic = np.delete(pic, pic[:, :, :3], axis=1)
-# not exactly sure why axis=1 here? otherwise the image gets flattened
+# not sure why each pixel still has 3 values though
 
 # save grayscale image
 img = Image.fromarray(pic)
