@@ -19,7 +19,7 @@ ax.imshow(pic)
 for i in range(height):
     for j in range(width):
         pic[i,j] = np.sum(pic[i,j]) / 3
-
+breakpoint()
 pic = np.delete(pic, [1,2], axis=1)
 # delets columns 1 and 2
 print(pic)
