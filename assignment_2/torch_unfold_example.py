@@ -1,5 +1,5 @@
-# Example written by Erich Liang
-# Comments written by Michel Liao
+# 3x3 example written by Erich Liang
+# 5x5 example and comments written by Michel Liao
 
 import torch
 import numpy as np
