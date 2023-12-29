@@ -29,14 +29,6 @@ def add_border(orig, border_px=100):
     return result
 
 
-# orig = np.ones((1, 2, 3))
-# bordered = add_border(orig, 1)
-# print(orig)
-# print(orig.shape)
-# print("\n\n\n")
-# print(bordered.shape)
-# print(bordered)
-
 filter = np.array(
     [
         [1, 0.5, 0, -0.5, -1],
@@ -47,17 +39,43 @@ filter = np.array(
     ]
 )
 
+sharpen_filter = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+
+three_gaussian_blur_filter = np.array(
+    [[1 / 16, 2 / 16, 1 / 16], [2 / 16, 4 / 16, 2 / 16], [1 / 16, 2 / 16, 1 / 16]]
+)
+
+five_gaussian_blur_filter = np.array(
+    [
+        [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
+        [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
+        [6 / 256, 24 / 256, 36 / 256, 24 / 256, 6 / 256],
+        [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
+        [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
+    ]
+)
+
 # Load image to grayscale
-img = cv.imread("golden-retriever.jpg", cv.IMREAD_GRAYSCALE)
+img = cv.imread("princeton_low_def.jpg", cv.IMREAD_GRAYSCALE)
 height, width = img.shape
 img = img.reshape(height, width, 1)
+
+# Display image
+# cv.imshow("Image", img)
+# cv.waitKey(0)
+# cv.destroyAllWindows()
 
 # Change image size to (1, 1, height, width) and convert to torch tensor
 img = np.transpose(img, (2, 0, 1)).reshape(1, 1, height, width)
 img = torch.from_numpy(img).float()
 
 # Unfold image
-unfold_op = torch.nn.Unfold(kernel_size=(5, 5), dilation=1, padding=2, stride=1)
+unfold_op = torch.nn.Unfold(
+    kernel_size=(filter.shape[0], filter.shape[1]),
+    dilation=1,
+    padding=int((filter.shape[0] - 1) / 2),
+    stride=1,
+)
 unfolded_img = unfold_op(img)
 unfolded_img = unfolded_img.numpy()
 print(type(unfolded_img))
@@ -65,17 +83,68 @@ print(unfolded_img)
 
 
 # Cross-correlation function
+
+
 def cross_correlation(filter, image):
-    a, b = image.shape
-    result = np.zeros((a, b))
-    for i in range(a):
-        for j in range(b):
-            result[i, j] = filter[i, j] * image[i, j]
-    return result
+    """
+    Calculates the cross-correlation between a filter and an image.
+
+    Parameters:
+    filter (ndarray): The 2D filter to be applied.
+    image (ndarray): A segment of the 1D image vector.
+
+    Returns:
+    float: The result of the cross-correlation.
+    """
+
+    filter = filter.flatten()
+
+    output = np.sum(filter * image)
+
+    return output
 
 
-# cv.imshow("Image", img)
-# cv.waitKey(0)
-# cv.destroyAllWindows()
+def threshold_cross_correlation(filter, image):
+    """
+    Performs cross-correlation between a filter and an image and thresholds the result.
 
-# print(f"this is img {img}")
+    Args:
+      filter (ndarray): The filter to be applied.
+      image (ndarray): The image on which the filter is applied.
+
+    Returns:
+      int: 0 if the cross-correlation is negative, 1 otherwise.
+    """
+
+    filter = filter.flatten()
+    output = 0
+
+    result = np.sum(filter * image)
+
+    if result > 0:
+        output = 1
+
+    return output
+
+
+# Apply cross-correlation to img
+
+result = np.array([])
+
+one, kernel, pixels = unfolded_img.shape
+for pixel in range(pixels):
+    result = np.append(
+        result, threshold_cross_correlation(filter, unfolded_img[0, :, pixel])
+    )
+
+# Reshape result to dimensions of img
+result = result.reshape(height, width, 1)
+
+# Save image
+cv.imwrite("threshold_broadcast.png", result)
+
+cv.imshow("Cross-correlation ", result)
+# ? Not really sure why this works since values out of range [0,256]
+# ? Also not sure why the image shown by imshow is different from the one saved by imwrite
+cv.waitKey(0)
+cv.destroyAllWindows()

@@ -26,6 +26,7 @@ print(result[0, :, 0])
 print(result[0, :, 1])
 print(result[0, :, 2])
 print(result[0, :, 3])
+breakpoint()
 
 # Check for understanding by using a 5x5 kernel
 
@@ -47,4 +48,3 @@ print(result[0, :, 0])
 print(result[0, :, 1])
 print(result[0, :, 2])
 print(result[0, :, 3])
-breakpoint()
