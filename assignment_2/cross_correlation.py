@@ -136,6 +136,5 @@ result = cv.normalize(result, None, 255, 0, cv.NORM_MINMAX, cv.CV_8U)
 # Save image
 cv.imwrite("gaussian_blur.png", result)
 cv.imshow("Cross-correlation ", result)
-# ? Also not sure why the image shown by imshow is different from the one saved by imwrite
 cv.waitKey(0)
 cv.destroyAllWindows()
