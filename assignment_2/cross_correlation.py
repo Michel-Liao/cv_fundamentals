@@ -3,13 +3,6 @@ import numpy as np
 import matplotlib as plt
 import cv2 as cv
 
-# def add_border(orig, border_px=100):
-#     a, b, c = orig.shape
-#     result = np.zeros((a + 2 * border_px, b + 2 * border_px, c))
-#     print(result)
-#     result[border_px:a + border_px, border_px:b + border_px, :] = orig
-#     return result
-
 
 def add_border(orig, border_px=100):
     """
@@ -24,9 +17,55 @@ def add_border(orig, border_px=100):
     new_shape = (a + 2 * border_px, b + 2 * border_px, c)
 
     result = np.zeros(new_shape, dtype=orig.dtype)
+    print(orig.dtype)
     result[border_px : a + border_px, border_px : b + border_px, :] = orig
 
     return result
+
+
+# Cross-correlation functions
+
+
+def cross_correlation(filter, image):
+    """
+    Calculates the cross-correlation between a filter and an image.
+
+    Parameters:
+    filter (ndarray): The 2D filter to be applied.
+    image (ndarray): A segment of the 1D image vector.
+
+    Returns:
+    float: The result of the cross-correlation.
+    """
+
+    filter = filter.flatten().reshape(25, -1)
+
+    output = np.sum(filter * image)
+
+    return output
+
+
+def threshold_cross_correlation(filter, image):
+    """
+    Performs cross-correlation between a filter and an image and thresholds the result.
+
+    Args:
+      filter (ndarray): The filter to be applied.
+      image (ndarray): The image on which the filter is applied.
+
+    Returns:
+      int: 0 if the cross-correlation is negative, 1 otherwise.
+    """
+
+    filter = filter.flatten()
+    output = 0
+
+    result = np.sum(filter * image)
+
+    if result > 0:
+        output = 1
+
+    return output
 
 
 filter = np.array(
@@ -82,69 +121,21 @@ print(type(unfolded_img))
 print(unfolded_img)
 
 
-# Cross-correlation function
-
-
-def cross_correlation(filter, image):
-    """
-    Calculates the cross-correlation between a filter and an image.
-
-    Parameters:
-    filter (ndarray): The 2D filter to be applied.
-    image (ndarray): A segment of the 1D image vector.
-
-    Returns:
-    float: The result of the cross-correlation.
-    """
-
-    filter = filter.flatten()
-
-    output = np.sum(filter * image)
-
-    return output
-
-
-def threshold_cross_correlation(filter, image):
-    """
-    Performs cross-correlation between a filter and an image and thresholds the result.
-
-    Args:
-      filter (ndarray): The filter to be applied.
-      image (ndarray): The image on which the filter is applied.
-
-    Returns:
-      int: 0 if the cross-correlation is negative, 1 otherwise.
-    """
-
-    filter = filter.flatten()
-    output = 0
-
-    result = np.sum(filter * image)
-
-    if result > 0:
-        output = 1
-
-    return output
-
-
-# Apply cross-correlation to img
-
+# Apply cross-correlation to img using broadcasting
 result = np.array([])
+result = np.sum(
+    five_gaussian_blur_filter.flatten().reshape(25, -1) * unfolded_img[0, :, :], axis=0
+)
 
-one, kernel, pixels = unfolded_img.shape
-for pixel in range(pixels):
-    result = np.append(
-        result, threshold_cross_correlation(filter, unfolded_img[0, :, pixel])
-    )
 
 # Reshape result to dimensions of img
 result = result.reshape(height, width, 1)
+# Normalize result. Solves issue of imwrite and imshow showing different images.
+result = cv.normalize(result, None, 255, 0, cv.NORM_MINMAX, cv.CV_8U)
 
 # Save image
-cv.imwrite("threshold_broadcast.png", result)
-
+cv.imwrite("gaussian_blur.png", result)
 cv.imshow("Cross-correlation ", result)
-# ? Not really sure why this works since values out of range [0,256]
 # ? Also not sure why the image shown by imshow is different from the one saved by imwrite
 cv.waitKey(0)
 cv.destroyAllWindows()
