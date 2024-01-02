@@ -90,10 +90,15 @@ def normalized_cross_correlation(filter, image_segment):
     return output
 
 
-# def batch_cross_correlation(filter, image_segments):
-#     filter_flat = filter.flatten().reshape(filter.shape[0], -1)
-#     image_segment_flat = image_segments.flatten().reshape(image_segments.shape[0], -1)
-#     pass
+def ncc_filter(image_segment):
+    f = filter
+    f = f.flatten().reshape(25, -1)
+
+    output = np.sum(f * image_segment) / np.sqrt(
+        np.sum(f**2) * np.sum(image_segment**2)
+    )
+
+    return output
 
 
 filter = np.array(
@@ -157,12 +162,17 @@ print(unfolded_img)
 
 
 # Normalized cross-correlation using for loop
+# result = np.array([])
+# for i in range(unfolded_img.shape[2]):
+#     result = np.append(
+#         result,
+#         normalized_cross_correlation(filter, unfolded_img[0, :, i]),
+#     )
+
+# ? Does this actually work as intended? Is this mapping?
+# Normalized cross-correlation using mapping
 result = np.array([])
-for i in range(unfolded_img.shape[2]):
-    result = np.append(
-        result,
-        normalized_cross_correlation(filter, unfolded_img[0, :, i]),
-    )
+result = np.append(result, np.apply_along_axis(ncc_filter, 0, unfolded_img[0, :, :]))
 
 # Reshape result to dimensions of img
 result = result.reshape(height, width, 1)
