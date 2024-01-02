@@ -17,7 +17,6 @@ def add_border(orig, border_px=100):
     new_shape = (a + 2 * border_px, b + 2 * border_px, c)
 
     result = np.zeros(new_shape, dtype=orig.dtype)
-    print(orig.dtype)
     result[border_px : a + border_px, border_px : b + border_px, :] = orig
 
     return result
@@ -66,6 +65,35 @@ def threshold_cross_correlation(filter, image):
         output = 1
 
     return output
+
+
+def normalized_cross_correlation(filter, image_segment):
+    """
+    Calculates the normalized cross-correlation between a filter and an image segment.
+
+    Args:
+      filter (ndarray): The filter to be applied.
+      image_segment (ndarray): The image segment on which the filter is applied.
+
+    Returns:
+      float: The result of the normalized cross-correlation.
+    """
+
+    filter = filter.flatten().reshape(25, -1)
+    image_segment = image_segment.flatten().reshape(25, -1)
+
+    output = np.sum(filter * image_segment) / np.sqrt(
+        np.sum(filter**2) * np.sum(image_segment**2)
+    )
+    print(output)
+
+    return output
+
+
+# def batch_cross_correlation(filter, image_segments):
+#     filter_flat = filter.flatten().reshape(filter.shape[0], -1)
+#     image_segment_flat = image_segments.flatten().reshape(image_segments.shape[0], -1)
+#     pass
 
 
 filter = np.array(
@@ -122,19 +150,27 @@ print(unfolded_img)
 
 
 # Apply cross-correlation to img using broadcasting
-result = np.array([])
-result = np.sum(
-    five_gaussian_blur_filter.flatten().reshape(25, -1) * unfolded_img[0, :, :], axis=0
-)
+# result = np.array([])
+# result = np.sum(
+#     five_gaussian_blur_filter.flatten().reshape(25, -1) * unfolded_img[0, :, :], axis=0
+# )
 
+
+# Normalized cross-correlation using for loop
+result = np.array([])
+for i in range(unfolded_img.shape[2]):
+    result = np.append(
+        result,
+        normalized_cross_correlation(filter, unfolded_img[0, :, i]),
+    )
 
 # Reshape result to dimensions of img
 result = result.reshape(height, width, 1)
 # Normalize result. Solves issue of imwrite and imshow showing different images.
-result = cv.normalize(result, None, 255, 0, cv.NORM_MINMAX, cv.CV_8U)
+result = cv.normalize(result, None, 1, 0, cv.NORM_MINMAX, dtype=cv.CV_32F)
 
 # Save image
-cv.imwrite("gaussian_blur.png", result)
+cv.imwrite("ncc_filter.png", result)
 cv.imshow("Cross-correlation ", result)
 cv.waitKey(0)
 cv.destroyAllWindows()
