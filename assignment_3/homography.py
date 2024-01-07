@@ -29,7 +29,7 @@ def drawAxes(image, size=16):
 
     Parameters:
     image (numpy.ndarray): The input image.
-    size (int): Width of the axes. Default is 16 pixels.
+    size (int): Width of the axes, must be even. Default is 16 pixels.
 
     Returns:
     image (numpy.ndarray): The image with axes drawn.
