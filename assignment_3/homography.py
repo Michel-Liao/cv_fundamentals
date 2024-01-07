@@ -22,7 +22,18 @@ def evenDims(image):
     return image
 
 
-def drawAxes(image, size=6):
+def drawAxes(image, size=16):
+    """
+    Draw axes on the image.
+
+    Parameters:
+    image (numpy.ndarray): The input image.
+    size (int): Width of the axes. Default is 16 pixels.
+
+    Returns:
+    image (numpy.ndarray): The image with axes drawn.
+    """
+
     if size % 2 != 0:
         raise ValueError("Size must be even.")
 
@@ -33,6 +44,10 @@ def drawAxes(image, size=6):
     # Draw x-axis
     xAx = np.zeros((size, width, channels), dtype=image.dtype)
     image[int((height / 2 - size / 2)) : int((height / 2 + size / 2)), :] = xAx
+
+    # Draw y-axis
+    yAx = np.zeros((height, size, channels), dtype=image.dtype)
+    image[:, int((width / 2 - size / 2)) : int((width / 2 + size / 2))] = yAx
 
     return image
 
