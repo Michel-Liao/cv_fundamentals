@@ -53,9 +53,11 @@ def drawAxes(image, size=16):
     return image
 
 
-# Read and show image
+# Read image
 img = cv.imread("central_park.jpg")
 img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+
+# Even dimensions and draw axes
 img = evenDims(img)
 img = drawAxes(img)
 
