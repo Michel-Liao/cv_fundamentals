@@ -14,6 +14,7 @@ def evenDims(image):
         image (ndarray): The image with even dimensions.
     """
     height, width, channels = image.shape
+    del channels
     if height % 2 != 0:
         image = image[: height - 1, :, :]
     if width % 2 != 0:
